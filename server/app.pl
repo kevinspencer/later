@@ -11,19 +11,40 @@
 #
 ################################################################################
 
+use Cwd;
 use Mojolicious::Lite;
+use Text::CSV_XS;
 use strict;
 use warnings;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
 get '/queue' => sub {
     my $c = shift;
-    $c->render(
-        json => [
-            { id => 2, timestamp => 123456789, text => "Coffee.  Who's with me?" }
-        ],
-    );
+
+    my $later_data = {};
+
+    $later_data->{status} = 0;
+
+    my $queue_file = getcwd() . '/queue/later.queue';
+
+    # if we've got no queue file, we got nothing to do
+    return $c->render(json => $later_data) if (! -e $queue_file);
+
+    open(my $fh, '<', $queue_file) || return $c->render(json => $later_data);
+    my $parser = Text::CSV_XS->new();
+    while(<$fh>) {
+        chomp;
+        $parser->parse($_);
+        my @fields = $parser->fields();
+        if ($fields[0] && $fields[1]) {
+            $later_data->{status} = 1;
+            push(@{$later_data->{queue}}, {timestamp => $fields[0], text => $fields[1]});
+        }
+    }
+    close($fh);
+    
+    $c->render(json => $later_data);
 };
 
 app->start;
