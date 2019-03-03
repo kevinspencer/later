@@ -12,6 +12,7 @@
 ################################################################################
 
 use Data::Dumper;
+use Getopt::long;
 use Mojo::UserAgent;
 use Mojo::URL;
 use strict;
@@ -19,7 +20,11 @@ use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.3';
+our $VERSION = '0.4';
+
+# by default we'll run in queue mode and ask the backend for the things
+my $mode;
+GetOptions("mode=s" => \$mode);
 
 my $bot = Mojo::UserAgent->new();
 my $url = Mojo::URL->new('http://localhost:3000/queue');
