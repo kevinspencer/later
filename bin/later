@@ -19,12 +19,13 @@ use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 
 my $bot = Mojo::UserAgent->new();
 my $url = Mojo::URL->new('http://localhost:3000/queue');
 my $res = $bot->get($url);
 
 if ($res->result()->is_success()) {
-    print "Yup\n";
+    my $response_string = $res->result->body();
+    print $response_string, "\n";
 }
