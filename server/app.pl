@@ -17,7 +17,12 @@ use Text::CSV_XS;
 use strict;
 use warnings;
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
+
+get '/' => sub {
+    my $c = shift;
+    $c->redirect_to('/queue');
+};
 
 get '/queue' => sub {
     my $c = shift;
