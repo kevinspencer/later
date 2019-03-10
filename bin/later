@@ -15,12 +15,13 @@ use Data::Dumper;
 use Getopt::Long;
 use Mojo::UserAgent;
 use Mojo::URL;
+use Try::Tiny;
 use strict;
 use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.4';
+our $VERSION = '0.5';
 
 # by default we'll run in queue mode and ask the backend for the things
 my $mode;
@@ -28,9 +29,16 @@ GetOptions("mode=s" => \$mode);
 
 my $bot = Mojo::UserAgent->new();
 my $url = Mojo::URL->new('http://localhost:3000/queue');
-my $res = $bot->get($url);
 
-if ($res->result()->is_success()) {
-    my $response_string = $res->result->body();
-    print $response_string, "\n";
-}
+my $result;
+try {
+    $result = $bot->get($url)->result();
+} catch {
+    print "Eeek, something bad happened: $_";
+    exit();
+};
+
+#if ($res->result()->is_success()) {
+#    my $response_string = $res->result->body();
+#    print $response_string, "\n";
+#}
