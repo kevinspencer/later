@@ -21,24 +21,27 @@ use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.5';
+our $VERSION = '0.6';
 
 # by default we'll run in queue mode and ask the backend for the things
 my $mode;
 GetOptions("mode=s" => \$mode);
 
 my $bot = Mojo::UserAgent->new();
-my $url = Mojo::URL->new('http://localhost:3000/queue');
+my $url = Mojo::URL->new('http://localhost:8080');
+$bot->max_redirects(3);
 
-my $result;
+my $response;
 try {
-    $result = $bot->get($url)->result();
+    $response = $bot->get($url)->result();
 } catch {
     print "Eeek, something bad happened: $_";
     exit();
 };
 
-#if ($res->result()->is_success()) {
-#    my $response_string = $res->result->body();
-#    print $response_string, "\n";
-#}
+if ($response->is_success()) {
+    my $result_string = $response->body();
+    print $result_string, "\n";
+} else {
+    print "Server returned code: " . $response->code() . " with message: " . $response->message(), "\n";
+}
