@@ -17,10 +17,14 @@ use Text::CSV_XS;
 use strict;
 use warnings;
 
-our $VERSION = '0.3';
+our $VERSION = '0.4';
 
-get '/' => sub {
+my $queue_dir  = getcwd() . '/queue';
+my $queue_file = $queue_dir . '/later.queue';
+
+any '/' => sub {
     my $c = shift;
+
     $c->redirect_to('/queue');
 };
 
@@ -30,8 +34,6 @@ get '/queue' => sub {
     my $later_data = {};
 
     $later_data->{status} = 0;
-
-    my $queue_file = getcwd() . '/queue/later.queue';
 
     # if we've got no queue file, we got nothing to do
     return $c->render(json => $later_data) if (! -e $queue_file);
@@ -52,4 +54,10 @@ get '/queue' => sub {
     $c->render(json => $later_data);
 };
 
-app->start;
+post '/queue' => sub {
+    my $c = shift;
+
+    $c->render(text => "you posted muh lud?");
+};
+
+app->start();
