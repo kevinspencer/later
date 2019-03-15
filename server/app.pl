@@ -21,7 +21,7 @@ use strict;
 use warnings;
 
 $Data::Dumper::Indent = 1;
-our $VERSION = '0.6';
+our $VERSION = '0.7';
 
 my $queue_dir  = getcwd() . '/queue';
 my $queue_file = $queue_dir . '/later.queue';
@@ -35,32 +35,33 @@ any '/' => sub {
 get '/queue' => sub {
     my $c = shift;
 
-    my $later_data = {};
-
-    $later_data->{status} = 0;
+    my $later_response_data = {};
+    $later_response_data->{status} = 0;
 
     # if we've got no queue file, we got nothing to do
-    return $c->render(json => $later_data) if (! -e $queue_file);
+    return $c->render(json => $later_response_data) if (! -e $queue_file);
 
-    open(my $fh, '<', $queue_file) || return $c->render(json => $later_data);
+    open(my $fh, '<', $queue_file) || return $c->render(json => $later_response_data);
     my $parser = Text::CSV_XS->new();
     while(<$fh>) {
         chomp;
         $parser->parse($_);
         my @fields = $parser->fields();
         if ($fields[0] && $fields[1]) {
-            $later_data->{status} = 1;
-            push(@{$later_data->{queue}}, {timestamp => $fields[0], text => $fields[1]});
+            $later_response_data->{status} = 1;
+            push(@{$later_response_data->{queue}}, {timestamp => $fields[0], text => $fields[1]});
         }
     }
     close($fh);
     
-    $c->render(json => $later_data);
+    $c->render(json => $later_response_data);
 };
 
 post '/queue' => sub {
     my $c = shift;
 
+    my $later_data = {};
+    $later_data->{status} = 0;
     my $later_hash = $c->req->json();
     if (($later_hash) && (exists($later_hash->{tweet}))) {
         if (! -d $queue_dir) {
@@ -70,6 +71,10 @@ post '/queue' => sub {
                 print $_, "\n";
             };
         }
+        my $now = time();
+        open(my $fh, '>>', $queue_file) || return $c->render(json => $later_data);
+        print $fh "$now,$later_hash->{tweet}\n";
+        close($fh);
         $c->render(text => 'yes');
     } else {
         $c->render(text => 'nope');
