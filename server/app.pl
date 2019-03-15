@@ -12,12 +12,14 @@
 ################################################################################
 
 use Cwd;
+use Data::Dumper;
 use Mojolicious::Lite;
 use Text::CSV_XS;
 use strict;
 use warnings;
 
-our $VERSION = '0.4';
+$Data::Dumper::Indent = 1;
+our $VERSION = '0.5';
 
 my $queue_dir  = getcwd() . '/queue';
 my $queue_file = $queue_dir . '/later.queue';
@@ -57,7 +59,12 @@ get '/queue' => sub {
 post '/queue' => sub {
     my $c = shift;
 
-    $c->render(text => "you posted muh lud?");
+    my $later_hash = $c->req->json();
+    if (($later_hash) && (exists($later_hash->{tweet}))) {
+        $c->render(text => 'yes');
+    } else {
+        $c->render(text => 'nope');
+    }
 };
 
 app->start();
