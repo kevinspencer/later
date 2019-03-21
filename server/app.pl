@@ -22,7 +22,7 @@ use utf8;
 use warnings;
 
 $Data::Dumper::Indent = 1;
-our $VERSION = '0.8';
+our $VERSION = '0.9';
 
 my $queue_dir  = getcwd() . '/queue';
 my $queue_file = $queue_dir . '/later.queue';
@@ -88,16 +88,32 @@ post '/queue' => sub {
             try {
                 mkpath($queue_dir);
             } catch {
-                print $_, "\n";
+                return $c->render(
+                    json   => $later_data,
+                    status => 500
+                );
             };
         }
         my $now = time();
-        open(my $fh, '>>', $queue_file) || return $c->render(json => $later_data);
+        open(my $fh, '>>', $queue_file) || do {
+            return $c->render(
+                json   => $later_data,
+                status => 500
+            );
+        };
         print $fh "$now,$later_hash->{tweet}\n";
         close($fh);
-        $c->render(text => 'yes');
+
+        $later_data->{status} = 1;
+        $c->render(
+            json   => $later_data,
+            status => 200
+        );
     } else {
-        $c->render(text => 'nope');
+        $c->render(
+            json   => $later_data,
+            status => 400
+        );
     }
 };
 
