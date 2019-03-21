@@ -18,10 +18,11 @@ use Mojolicious::Lite;
 use Text::CSV_XS;
 use Try::Tiny;
 use strict;
+use utf8;
 use warnings;
 
 $Data::Dumper::Indent = 1;
-our $VERSION = '0.7';
+our $VERSION = '0.8';
 
 my $queue_dir  = getcwd() . '/queue';
 my $queue_file = $queue_dir . '/later.queue';
@@ -32,6 +33,9 @@ any '/' => sub {
     $c->redirect_to('/queue');
 };
 
+# GET /queue
+# Testing: curl http://localhost:3000/queue/
+
 get '/queue' => sub {
     my $c = shift;
 
@@ -39,9 +43,19 @@ get '/queue' => sub {
     $later_response_data->{status} = 0;
 
     # if we've got no queue file, we got nothing to do
-    return $c->render(json => $later_response_data) if (! -e $queue_file);
+    if (! -e $queue_file) {
+        return $c->render(
+            json   => $later_response_data,
+            status => 200
+        );
+    }
 
-    open(my $fh, '<', $queue_file) || return $c->render(json => $later_response_data);
+    open(my $fh, '<', $queue_file) || do {
+        return $c->render(
+            json   => $later_response_data,
+            status => 500
+        );
+    };
     my $parser = Text::CSV_XS->new();
     while(<$fh>) {
         chomp;
@@ -54,8 +68,14 @@ get '/queue' => sub {
     }
     close($fh);
     
-    $c->render(json => $later_response_data);
+    $c->render(
+        json   => $later_response_data,
+        status => 200
+    );
 };
+
+# POST /queue
+# Testing: curl -XPOST http://localhost:3000/queue/ -d '{"tweet":"this is a tweet"}'
 
 post '/queue' => sub {
     my $c = shift;
