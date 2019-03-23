@@ -21,14 +21,14 @@ use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.6';
+our $VERSION = '0.7';
 
 # by default we'll run in queue mode and ask the backend for the things
 my $mode;
 GetOptions("mode=s" => \$mode);
 
 my $bot = Mojo::UserAgent->new();
-my $url = Mojo::URL->new('http://localhost:8080');
+my $url = Mojo::URL->new('http://localhost:3000');
 $bot->max_redirects(3);
 
 my $response;
