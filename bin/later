@@ -12,36 +12,34 @@
 ################################################################################
 
 use Data::Dumper;
-use Getopt::Long;
 use Mojo::UserAgent;
 use Mojo::URL;
 use Try::Tiny;
+use utf8;
 use strict;
 use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.7';
+our $VERSION = '0.8';
 
 # by default we'll run in queue mode and ask the backend for the things
-my $mode;
-GetOptions("mode=s" => \$mode);
+# but override that if text provided on STDIN
+
+my $tweet_from_stdin = shift;
 
 my $bot = Mojo::UserAgent->new();
-my $url = Mojo::URL->new('http://localhost:3000');
-$bot->max_redirects(3);
+my $url = Mojo::URL->new('http://localhost:3000/queue');
 
-my $response;
-try {
-    $response = $bot->get($url)->result();
-} catch {
-    print "Eeek, something bad happened: $_";
-    exit();
-};
-
-if ($response->is_success()) {
-    my $result_string = $response->body();
-    print $result_string, "\n";
+if ($tweet_from_stdin) {
+    my $tx = $bot->post($url => {Accept => '*/*'} => json => {tweet => $tweet_from_stdin});
+    if ($tx->res()->code() =~ /^2/) {
+        print Dumper $tx->res();
+    }
 } else {
-    print "Server returned code: " . $response->code() . " with message: " . $response->message(), "\n";
+    $bot->max_redirects(3);
+    my $tx = $bot->get($url);
+    if ($tx->res()->code() =~ /^2/) {
+        print Dumper $tx->res();
+    }
 }
