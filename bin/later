@@ -12,16 +12,16 @@
 ################################################################################
 
 use Data::Dumper;
+use JSON::XS;
 use Mojo::UserAgent;
 use Mojo::URL;
-use Try::Tiny;
 use utf8;
 use strict;
 use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.9';
+our $VERSION = '0.10';
 
 # by default we'll run in queue mode and ask the backend for the things
 # but override that if text provided on STDIN
@@ -36,14 +36,15 @@ if ($tweet_from_stdin) {
     if ($tx->res()->code() =~ /^2/) {
         print "Added tweet to queue.\n";
     } else {
-        print "Couldn't add tweet to queue: " . $tx->res()->code() . " - " . $tx->res()->message(), "\n";
+        print "ERROR: couldn't add tweet to queue: " . $tx->res()->code() . " - " . $tx->res()->message(), "\n";
     }
 } else {
     $bot->max_redirects(3);
     my $tx = $bot->get($url);
     if ($tx->res()->code() =~ /^2/) {
-        print Dumper $tx->res();
+        my $data_struct = decode_json($tx->res()->body());
+        print Dumper $data_struct;
     } else {
-        print "Couldn't retrieve tweets from queue: " . $tx->res()->code() . " - " . $tx->res()->message(), "\n";
+        print "ERROR: couldn't retrieve tweets from queue: " . $tx->res()->code() . " - " . $tx->res()->message(), "\n";
     }
 }
