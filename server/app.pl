@@ -13,6 +13,7 @@
 
 use Cwd;
 use Data::Dumper;
+use File::Basename;
 use File::Path;
 use Mojolicious::Lite;
 use Text::CSV_XS;
@@ -22,9 +23,9 @@ use utf8;
 use warnings;
 
 $Data::Dumper::Indent = 1;
-our $VERSION = '0.9';
+our $VERSION = '0.10';
 
-my $queue_dir  = getcwd() . '/queue';
+my $queue_dir  = dirname(getcwd()) . '/queue';
 my $queue_file = $queue_dir . '/later.queue';
 
 any '/' => sub {
