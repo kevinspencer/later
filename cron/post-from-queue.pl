@@ -11,11 +11,30 @@
 #
 ################################################################################
 
+use Cwd;
 use Data::Dumper;
+use File::Basename;
+use Text::CSV_XS;
 use utf8;
 use strict;
 use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
+
+my $queue_dir  = dirname(getcwd()) . '/queue';
+my $queue_file = $queue_dir . '/later.queue';
+
+exit() if (! -e $queue_file);
+
+open(my $fh, '<', $queue_file) || die "Could not open $queue_file - $!\n";
+my $parser = Text::CSV_XS->new();
+while(<$fh>) {
+    chomp;
+    $parser->parse($_);
+    my @fields = $parser->fields();
+    print $fields[1], "\n";
+}
+close($fh);
+
