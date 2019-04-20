@@ -15,13 +15,13 @@ use Data::Dumper;
 use JSON::XS;
 use Mojo::UserAgent;
 use Mojo::URL;
-use utf8;
 use strict;
+use utf8;
 use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 # by default we'll run in queue mode and ask the backend for the things
 # but override that if text provided on STDIN
@@ -43,7 +43,11 @@ if ($tweet_from_stdin) {
     my $tx = $bot->get($url);
     if ($tx->res()->code() =~ /^2/) {
         my $data_struct = decode_json($tx->res()->body());
-        print Dumper $data_struct;
+        if ($data_struct) {
+            print Dumper $data_struct;
+        } else {
+            print "ERROR: couldn't retrive tweets from queue.\n";
+        }
     } else {
         print "ERROR: couldn't retrieve tweets from queue: " . $tx->res()->code() . " - " . $tx->res()->message(), "\n";
     }
