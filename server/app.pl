@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# Copyright 2019 Kevin Spencer <kevin@kevinspencer.org>
+# Copyright 2019-2021 Kevin Spencer <kevin@kevinspencer.org>
 #
 # Permission to use, copy, modify, distribute, and sell this software and its
 # documentation for any purpose is hereby granted without fee, provided that
@@ -23,7 +23,7 @@ use utf8;
 use warnings;
 
 $Data::Dumper::Indent = 1;
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 my $queue_dir  = dirname(getcwd()) . '/queue';
 my $queue_file = $queue_dir . '/later.queue';
@@ -64,7 +64,7 @@ get '/queue' => sub {
         my @fields = $parser->fields();
         if ($fields[0] && $fields[1]) {
             $later_response_data->{status} = 1;
-            push(@{$later_response_data->{queue}}, {timestamp => $fields[0], text => $fields[1]});
+            push(@{$later_response_data->{queue}}, {id => $fields[0], tweet => $fields[1]});
         }
     }
     close($fh);
