@@ -118,4 +118,24 @@ post '/queue' => sub {
     }
 };
 
+# DELETE /queue
+# Testing: curl -XDELETE http://localhost:3000/queue/ -d '{"delete":$id"}'
+
+del '/queue' => sub {
+    my $c = shift;
+
+    my $later_data = {};
+    $later_data->{status} = 0;
+    my $later_hash = $c->req->json();
+    if (($later_hash) && (exists($later_hash->{delete}))) {
+        if (-e $queue_file) {
+        } else {
+            $c->render(
+                json => $later_data,
+                status => 404
+            );
+        }
+    }
+};
+
 app->start();
