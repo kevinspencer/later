@@ -23,7 +23,7 @@ use utf8;
 use warnings;
 
 $Data::Dumper::Indent = 1;
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 my $queue_dir  = dirname(getcwd()) . '/queue';
 my $queue_file = $queue_dir . '/later.queue';
@@ -168,9 +168,6 @@ del '/queue' => sub {
                     status => 500
                 );
             };
-
-           
-            my $http_status = $later_data->{status} ? 200 : 404;
 
             $c->render(
                 json   => $later_data,
