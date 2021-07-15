@@ -23,7 +23,7 @@ use utf8;
 use warnings;
 
 $Data::Dumper::Indent = 1;
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 my $queue_dir  = dirname(getcwd()) . '/queue';
 my $queue_file = $queue_dir . '/later.queue';
@@ -127,8 +127,56 @@ del '/queue' => sub {
     my $later_data = {};
     $later_data->{status} = 0;
     my $later_hash = $c->req->json();
+
     if (($later_hash) && (exists($later_hash->{delete}))) {
         if (-e $queue_file) {
+            my $tmp_file = $queue_file . '.tmp';
+
+            open(my $tmpfh, '>', $tmp_file) || do {
+                return $c->render(
+                    json   => $later_data,
+                    status => 500
+                );
+            };
+
+            open(my $fh, '<', $queue_file) || do {
+                return $c->render(
+                    json   => $later_data,
+                    status => 500
+                );
+            };
+
+            my $parser = Text::CSV_XS->new();
+
+            while(<$fh>) {
+                chomp;
+                my $line = $_;
+                $parser->parse($line);
+                my @fields = $parser->fields();
+                if ($fields[0] && ($fields[0] == $later_hash->{delete})) {
+                    $later_data->{status} = 1;
+                    next;
+                }
+                print $tmpfh $line, "\n"; 
+            }
+            close($fh);
+            close($tmpfh);
+
+            rename($tmpfh, $queue_file) || do {
+                return $c->render(
+                    json   => $later_data,
+                    status => 500
+                );
+            };
+
+           
+            my $http_status = $later_data->{status} ? 200 : 404;
+
+            $c->render(
+                json   => $later_data,
+                status => $later_data->{status} ? 200 : 404
+            );
+
         } else {
             $c->render(
                 json => $later_data,
