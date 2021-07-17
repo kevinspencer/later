@@ -22,7 +22,7 @@ use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 # if no mode is chosen on the command line we'll default to queue and
 # ask the backend for everything already queued up
@@ -35,8 +35,21 @@ my $later_queue_url = $dev_mode ? 'http://localhost:3000/queue' : 'https://kevin
 my $bot = Mojo::UserAgent->new();
 my $url = Mojo::URL->new($later_queue_url);
 
+# FIXME: let's do some DRY cleanup here...
+
 if ($add_message) {
     my $tx = $bot->post($url => {Accept => '*/*'} => json => {tweet => $add_message});
+    if ($tx->res()->code()) {
+        if ($tx->res()->code() =~ /^2/) {
+            print "Added tweet to queue.\n";
+        } else {
+            print "ERROR: couldn't add tweet to queue: " . $tx->res()->code() . " - " . $tx->res()->message(), "\n";
+        }
+    } else {
+        print "ERROR: couldn't add tweet to queue: " . $tx->res()->error->{message}, "\n";
+    }
+} elsif ($id_to_delete) {
+    my $tx = $bot->delete($url => {Accept => '*/*'} => json => {delete => $id_to_delete});
     if ($tx->res()->code()) {
         if ($tx->res()->code() =~ /^2/) {
             print "Added tweet to queue.\n";
