@@ -22,7 +22,7 @@ use warnings;
 
 $Data::Dumper::Indent = 1;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 # if no mode is chosen on the command line we'll default to queue and
 # ask the backend for everything already queued up
@@ -52,12 +52,12 @@ if ($add_message) {
     my $tx = $bot->delete($url => {Accept => '*/*'} => json => {delete => $id_to_delete});
     if ($tx->res()->code()) {
         if ($tx->res()->code() =~ /^2/) {
-            print "Added tweet to queue.\n";
+            print "Deleted tweet from queue.\n";
         } else {
-            print "ERROR: couldn't add tweet to queue: " . $tx->res()->code() . " - " . $tx->res()->message(), "\n";
+            print "ERROR: couldn't delete tweet from queue: " . $tx->res()->code() . " - " . $tx->res()->message(), "\n";
         }
     } else {
-        print "ERROR: couldn't add tweet to queue: " . $tx->res()->error->{message}, "\n";
+        print "ERROR: couldn't delete tweet from queue: " . $tx->res()->error->{message}, "\n";
     }
 } else {
     $bot->max_redirects(3);
