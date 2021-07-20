@@ -23,7 +23,7 @@ use utf8;
 use warnings;
 
 $Data::Dumper::Indent = 1;
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 my $queue_dir  = dirname(getcwd()) . '/queue';
 my $queue_file = $queue_dir . '/later.queue';
@@ -162,7 +162,7 @@ del '/queue' => sub {
             close($fh);
             close($tmpfh);
 
-            rename($tmpfh, $queue_file) || do {
+            rename($tmp_file, $queue_file) || do {
                 return $c->render(
                     json   => $later_data,
                     status => 500
